@@ -4,16 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+
+/* Override vuetify buttons */
+button {
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
 :root {
   font-family: Montserrat, Helvetica, Arial, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
 }
-
-body {
-  min-height: 100vh;
-}
-
 /*Início das modificações na ScrollBar*/
 
 /* width */
@@ -41,4 +43,7 @@ body {
 
 /*Fim das modificações na ScrollBar*/
 
+.transition-all{
+  transition: all 0.1s linear;
+}
 

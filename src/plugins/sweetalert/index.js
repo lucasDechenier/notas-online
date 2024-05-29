@@ -40,4 +40,24 @@ export default {
       type: 'info',
     })
   },
+
+  confirm(options, callbackSuccess, callbackError) {
+    options = Object.assign({
+      title: "Atenção!",
+      text: "Você tem certeza que deseja tomar essa ação?",
+      showCancelButton: true,
+      confirmButtonColor: "primary",
+      confirmButtonText: "Sim",
+      cancelButtonText: "Não",
+      reverseButtons: true
+    }, options);
+
+    Swal.fire(options).then((result) => {
+      if (result.value) {
+        callbackSuccess()
+      } else if (callbackError) {
+        callbackError(result)
+      }
+    })
+  }
 }

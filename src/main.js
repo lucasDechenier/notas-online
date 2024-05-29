@@ -1,11 +1,3 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import '@/style.css'
-import 'sweetalert2/dist/sweetalert2.min.css';
-import App from '@/App.vue'
-
-const app = createApp(App)
-
 // Vuetify
 import vuetify from '@/plugins/vuetify'
 
@@ -14,6 +6,13 @@ import router from '@/plugins/router'
 import i18n from '@/plugins/i18n'
 
 
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
+import '@/style.css'
+import 'sweetalert2/dist/sweetalert2.min.css';
+import App from '@/App.vue'
+
+const app = createApp(App)
 
 
 app.use(vuetify)
