@@ -10,7 +10,7 @@
         placeholder="Buscar"
         variant="outlined" />
       <v-btn
-        class="tw-bg-indigo-800 tw-text-white tw-text-xs"
+        class="tw-bg-indigo-800 tw-text-white tw-text-sm"
         elevation="0"
         @click="changeDialog(true)"
       >

@@ -10,7 +10,7 @@
         placeholder="Buscar"
         variant="outlined" />
       <v-btn
-        class="tw-bg-indigo-800 tw-text-white tw-text-xs"
+        class="tw-bg-indigo-800 tw-text-white tw-text-sm"
         elevation="0"
         @click="changeDialog(true)"
       >
@@ -25,9 +25,23 @@
           elevation="0"
           @click="generateExcell"
         >
-          Exportar Excell
+          Gerar planilha Excel
         </v-btn>
       </div>
+      <section class="d-flex tw-gap-4 flex-column mb-4" v-if="hasWarningMessage">
+        <section v-if="!hasSelectedDiscipline" class="d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
+          <v-icon class="mr-2">
+            fa-solid fa-circle-xmark
+          </v-icon>
+          Não há disciplina selecionada, escolha ou crie uma em "Disciplinas" para adicionar alunos
+        </section>
+        <section v-if="!hasGradesConfiguration" class="d-flex tw-items-center tw-text-sm tw-text-yellow-700 tw-border pa-2 tw-rounded-md tw-border-yellow-500 tw-bg-yellow-50 tw-font-semibold">
+          <v-icon class="mr-2">
+            fa-solid fa-circle-xmark
+          </v-icon>
+          Não há notas configuradas, configure as notas em "Configurar Notas" para adicionar alunos
+        </section>
+      </section>
       <v-data-table
         :headers="tableHeaders"
         :items="filteredStudents"
@@ -85,16 +99,24 @@
           </span>
         </header>
         <section class="d-flex flex-column overflow-auto flex-grow pt-2 pb-3" style="max-height: 60vh;">
-          <section v-if="!hasSelectedDiscipline" class="d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
-            <v-icon class="mr-2">
-              fa-solid fa-circle-xmark
-            </v-icon>
-            Ainda não existe disciplina selecionada, escolha ou crie uma para adicionar alunos
+          <section class="d-flex tw-gap-4 flex-column" v-if="hasWarningMessage">
+            <section v-if="!hasSelectedDiscipline" class="d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
+              <v-icon class="mr-2">
+                fa-solid fa-circle-xmark
+              </v-icon>
+              Não há disciplina selecionada, escolha ou crie uma em "Disciplinas" para adicionar alunos
+            </section>
+            <section v-if="!hasGradesConfiguration" class="d-flex tw-items-center tw-text-sm tw-text-yellow-700 tw-border pa-2 tw-rounded-md tw-border-yellow-500 tw-bg-yellow-50 tw-font-semibold">
+              <v-icon class="mr-2">
+                fa-solid fa-circle-xmark
+              </v-icon>
+              Não há notas configuradas, configure as notas em "Configurar Notas" para adicionar alunos
+            </section>
           </section>
           <v-form
             ref="form"
             class="d-flex tw-gap-6 flex-column"
-            v-if="hasSelectedDiscipline">
+            v-if="hasSelectedDiscipline && hasGradesConfiguration">
             <v-text-field
               class=" tw-text-indigo-800 tw-text-xs"
               v-model="student.name"
@@ -104,6 +126,7 @@
               density="compact"
               hide-details="auto"
               :loading="loading"
+              @keydown.enter.prevent=""
               placeholder="Nome"
               :rules="[required]"
               variant="outlined" />
@@ -142,7 +165,7 @@
             variant="outlined"
             @click="handleStudent"
             id="confirmButton"
-            :disabled="!hasSelectedDiscipline"
+            :disabled="!hasSelectedDiscipline || !hasGradesConfiguration"
           >
             {{ edit ? 'Atualizar' : 'Cadastrar' }}
           </v-btn>
@@ -180,14 +203,14 @@
         filter: null
       }
     },
-    async mounted () {
-      this.loadGradesConfiguration();
-      this.loadStudents()
+    mounted () {
+      this.loading = true
+      Promise.allSettled([this.loadGradesConfiguration(), this.loadStudents()]).finally(() => this.loading = false)
     },
     watch: {
       selectedDiscipline() {
-        this.loadGradesConfiguration()
-        this.loadStudents()
+        this.loading = true
+        Promise.allSettled([this.loadGradesConfiguration(), this.loadStudents()]).finally(() => this.loading = false)
       },
       '$route.query': {
         handler(newValue) {
@@ -199,13 +222,16 @@
       },
     },
     computed: {
-      ...mapState(useDisciplineStore, ['gradesConfiguration', 'selectedDiscipline', 'hasSelectedDiscipline']),
+      ...mapState(useDisciplineStore, ['gradesConfiguration', 'selectedDiscipline', 'hasSelectedDiscipline', 'hasGradesConfiguration']),
       ...mapState(useStudentStore, ['students']),
+      hasWarningMessage(){
+        return (!this.hasSelectedDiscipline || !this.hasGradesConfiguration) && !this.loading
+      },
       tableHeaders(){
         return [
           { title: 'Nome', value: 'name' },
           ...this.gradesConfiguration.map(grade => {
-            return { title: grade.name, value: `header_${grade.id}` }
+            return { title: `${grade.name} ${grade.weight ? `(Peso: ${grade.weight})` : ''}`, value: `header_${grade.id}` }
           }),
           { title: 'Media', value: 'average'},
           { title: 'Situação', value: 'situation', sortable: false },
@@ -246,7 +272,7 @@
       confirmAction(event){
         const unpermitedTargets = ['cancelButton', 'confirmButton']
 
-        if(!this.hasSelectedDiscipline || this.loading || unpermitedTargets.includes(event?.target?.id)) return
+        if(!this.hasSelectedDiscipline || !this.hasGradesConfiguration || this.loading || unpermitedTargets.includes(event?.target?.id)) return
 
         this.handleStudent()
       },
@@ -269,7 +295,7 @@
         })
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, `Notas (${this?.selectedDiscipline?.name})`);
+        XLSX.utils.book_append_sheet(workbook, worksheet, `Notas dos Alunos`);
         XLSX.writeFile(workbook, fileName + '.xlsx');
       },
       deleteStudent(student){

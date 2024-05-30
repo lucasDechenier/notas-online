@@ -51,7 +51,7 @@
           <v-icon class="mr-2">
             fa-solid fa-circle-xmark
           </v-icon>
-          Ainda não existe disciplina selecionada
+          Não há disciplina selecionada
         </section>
 
         <v-autocomplete
@@ -120,7 +120,7 @@ export default {
           value: 'disapproved', 
           path: '/students/?filter=disapproved'
         },{
-          name: 'Configuração', 
+          name: 'Configurar Notas', 
           icon: 'fa-solid fa-gear', 
           value: '/config', 
           path: '/config'

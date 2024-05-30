@@ -56,7 +56,7 @@ export const useStudentStore = defineStore('student', {
       let grades = []
       if (student.student_grades) {
         grades = Object.entries(newStudent.grades).map(([key, value]) => { 
-          return { student_id: student.id, grade_config_id: parseInt(key), value: parseInt(value), id: parseInt(student.student_grades.find(e => e.grade_config_id == key)?.id) }
+          return { student_id: student.id, grade_config_id: parseInt(key), value: parseFloat(value), id: parseInt(student.student_grades.find(e => e.grade_config_id == key)?.id) }
         })
       }
       await StudentsService.upsertGrades(grades);

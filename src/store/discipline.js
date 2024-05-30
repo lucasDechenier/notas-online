@@ -18,6 +18,9 @@ export const useDisciplineStore = defineStore('discipline', {
     },
     gradesWeightSum: (state) => {
       return state.gradesConfiguration.map(grade => grade.weight || 0).reduce((accumulator, currentValue) => accumulator + currentValue, 0)
+    },
+    hasGradesConfiguration: (state) => {
+      return (state.gradesConfiguration || []).length > 0
     }
   },
   actions: {
@@ -45,9 +48,13 @@ export const useDisciplineStore = defineStore('discipline', {
         DisciplineStorage.saveSelectedDiscipline(null)
       }
     },
-    async addDiscipline(newDiscipline) {
+    async addDiscipline(newDiscipline, fillSelectedDiscipline = true) {
       return DisciplineService.createDiscipline(newDiscipline).then((data) => {
         this.disciplines.push(...data)
+
+        if(fillSelectedDiscipline && !this.selectedDiscipline) {
+          this.changeSelectedDiscipline(this.disciplines?.[0])
+        }
       })
     },
     async removeDiscipline(disciplineId, fillSelectedDiscipline = true){

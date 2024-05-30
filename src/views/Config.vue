@@ -10,7 +10,7 @@
         placeholder="Buscar"
         variant="outlined" />
       <v-btn
-        class="tw-bg-indigo-800 tw-text-white tw-text-xs"
+        class="tw-bg-indigo-800 tw-text-white tw-text-sm"
         elevation="0"
         @click="changeDialog(true)"
       >
@@ -21,6 +21,13 @@
       <div class="tw-text-xl tw-font-semibold mb-4 tw-text-indigo-800">
         Notas cadastradas
       </div>
+
+      <section v-if="!hasSelectedDiscipline" class="mb-4 d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
+        <v-icon class="mr-2">
+          fa-solid fa-circle-xmark
+        </v-icon>
+        Não há disciplina selecionada, escolha ou crie uma em "Disciplinas" para configurar as notas
+      </section>
       <v-data-table
         :headers="headers"
         :items="filteredGrades"
@@ -72,7 +79,7 @@
             <v-icon class="mr-2">
               fa-solid fa-circle-xmark
             </v-icon>
-            Ainda não existe disciplina selecionada, escolha ou crie uma para configurar as notas
+            Não há disciplina selecionada, escolha ou crie uma em "Disciplinas" para configurar as notas
           </section>
           <v-form
             ref="form"
