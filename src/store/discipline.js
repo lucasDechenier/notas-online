@@ -39,10 +39,12 @@ export const useDisciplineStore = defineStore('discipline', {
         this.disciplines.push(...data)
       })
     },
-    async removeDiscipline(disciplineId){
+    async removeDiscipline(disciplineId, fillSelectedDiscipline = true){
       return DisciplineService.deleteDiscipline(disciplineId).then(() => {
         if(disciplineId == this.selectedDiscipline?.id) this.selectedDiscipline = null
         this.disciplines = this.disciplines.filter(discipline => discipline.id !== disciplineId)
+
+        if(fillSelectedDiscipline && !this.selectedDiscipline && (this.disciplines || []).length) this.selectedDiscipline = this.disciplines?.[0]
       })
     },
     async updateDiscipline(updatedDiscipline) {
@@ -56,8 +58,10 @@ export const useDisciplineStore = defineStore('discipline', {
     },
 
     async loadGradesConfiguration(){
+      if (!this.hasSelectedDiscipline) return 
+      
       this.gradesConfiguration = []
-      return GradeConfigurationService.listGrades(this.selectedDiscipline.id).then(grades => {
+      return GradeConfigurationService.listGrades(this.selectedDiscipline?.id).then(grades => {
         this.gradesConfiguration = grades
       })
     },

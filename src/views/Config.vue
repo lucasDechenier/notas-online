@@ -59,6 +59,7 @@
     <v-dialog
       v-model="dialog"
       max-width="500px"
+      @keydown.enter="confirmAction"
     >
       <section class="d-flex flex-column bg-white tw-rounded-md tw-gap-4 px-6">
         <header class="d-flex pt-4">
@@ -67,7 +68,16 @@
           </span>
         </header>
         <section class="d-flex flex-column overflow-auto flex-grow pt-2 pb-3" style="max-height: 60vh;">
-          <v-form ref="form" class="d-flex tw-gap-6 flex-column">
+          <section v-if="!hasSelectedDiscipline" class="d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
+            <v-icon class="mr-2">
+              fa-solid fa-circle-xmark
+            </v-icon>
+            Ainda não existe disciplina selecionada, escolha ou crie uma para configurar as notas
+          </section>
+          <v-form
+            ref="form"
+            class="d-flex tw-gap-6 flex-column"
+            v-if="hasSelectedDiscipline">
             <v-text-field
               class=" tw-text-indigo-800 tw-text-xs"
               v-model="grade.name"
@@ -120,6 +130,7 @@
             class="tw-text-green-500"
             variant="outlined"
             @click="handleGrade"
+            :disabled="!hasSelectedDiscipline"
           >
             {{ edit ? 'Atualizar' : 'Cadastrar' }}
           </v-btn>
@@ -169,7 +180,7 @@
       }
     },
     computed: {
-      ...mapState(useDisciplineStore, ['gradesConfiguration', 'gradesWeightSum', 'selectedDiscipline']),
+      ...mapState(useDisciplineStore, ['gradesConfiguration', 'gradesWeightSum', 'selectedDiscipline', 'hasSelectedDiscipline']),
       filteredGrades() {
         return this.gradesConfiguration.filter(i => i.name.toLowerCase().includes(this.search.toLowerCase()))
       },
@@ -177,11 +188,18 @@
     methods: {
       ...mapActions(useDisciplineStore, ['addGradeConfiguration', 'updateGradeConfiguration', 'loadGradesConfiguration', 'removeGradeConfiguration']),
       required: required,
+      confirmAction(){
+        if(!this.hasSelectedDiscipline || this.loading) return
+
+        this.handleGrade()
+      },
       deleteGrade(grade){
         Swal.confirm({text: `Deseja mesmo apagar a nota "${grade.name}"?`}, () =>{
           this.loading = true
           this.removeGradeConfiguration(grade.id).then(() => {
-            Swal.alertSuccess({title: 'Nota deletada com sucesso'})
+            setTimeout(() => {
+              Swal.alertSuccess({title: 'Nota deletada com sucesso'})
+            }, 100);
           }).finally(() => {
             this.loading = false
           })
@@ -198,15 +216,19 @@
         this.loading = true
         if(this.grade.id){
           this.updateGradeConfiguration(this.grade).then(() => {
-            Swal.alertSuccess({title: 'Nota atualizada com sucesso'})
-            this.changeDialog(false)
+            setTimeout(() => {
+              Swal.alertSuccess({title: 'Nota atualizada com sucesso'})
+              this.changeDialog(false)
+            }, 100);
           }).finally(() => {
             this.loading = false
           })
         }else{
           this.addGradeConfiguration(this.grade).then(() => {
-            Swal.alertSuccess({title: 'Nota criada com sucesso'})
-            this.changeDialog(false)
+            setTimeout(() => {
+              Swal.alertSuccess({title: 'Nota criada com sucesso'})
+              this.changeDialog(false)
+            }, 100);
           }).finally(() => {
             this.loading = false
           })

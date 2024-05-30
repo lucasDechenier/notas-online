@@ -76,6 +76,7 @@
     <v-dialog
       v-model="dialog"
       max-width="500px"
+      @keydown.enter="confirmAction"
     >
       <section class="d-flex flex-column bg-white tw-rounded-md tw-gap-4 px-6">
         <header class="d-flex pt-4">
@@ -84,7 +85,16 @@
           </span>
         </header>
         <section class="d-flex flex-column overflow-auto flex-grow pt-2 pb-3" style="max-height: 60vh;">
-          <v-form ref="form" class="d-flex tw-gap-6 flex-column">
+          <section v-if="!hasSelectedDiscipline" class="d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
+            <v-icon class="mr-2">
+              fa-solid fa-circle-xmark
+            </v-icon>
+            Ainda não existe disciplina selecionada, escolha ou crie uma para adicionar alunos
+          </section>
+          <v-form
+            ref="form"
+            class="d-flex tw-gap-6 flex-column"
+            v-if="hasSelectedDiscipline">
             <v-text-field
               class=" tw-text-indigo-800 tw-text-xs"
               v-model="student.name"
@@ -130,6 +140,7 @@
             class="tw-text-green-500"
             variant="outlined"
             @click="handleStudent"
+            :disabled="!hasSelectedDiscipline"
           >
             {{ edit ? 'Atualizar' : 'Cadastrar' }}
           </v-btn>
@@ -185,7 +196,7 @@
       },
     },
     computed: {
-      ...mapState(useDisciplineStore, ['gradesConfiguration', 'selectedDiscipline']),
+      ...mapState(useDisciplineStore, ['gradesConfiguration', 'selectedDiscipline', 'hasSelectedDiscipline']),
       ...mapState(useStudentStore, ['students']),
       tableHeaders(){
         return [
@@ -199,6 +210,7 @@
         ]
       },
       mountedStudents(){
+        if(!this.hasSelectedDiscipline) return []
         const mounted_students = this.students.map(student => {
           this.gradesConfiguration.map(grade => {
             student[`header_${grade.id}`] = student.student_grades.find(
@@ -228,6 +240,11 @@
       ...mapActions(useDisciplineStore, ['loadGradesConfiguration']),
       ...mapActions(useStudentStore, ['loadStudents', 'addStudent', 'updateStudent', 'removeStudent']),
       required: required,
+      confirmAction(){
+        if(!this.hasSelectedDiscipline || this.loading) return
+
+        this.handleStudent()
+      },
       generateExcell(){
         const date = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }).slice(0, 10).replace(/-/g, '_');
         const fileName = `${this?.selectedDiscipline?.name}_${date}`

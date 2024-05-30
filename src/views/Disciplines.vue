@@ -61,6 +61,7 @@
     <v-dialog
       v-model="dialog"
       max-width="500px"
+      @keydown.enter="confirmAction"
     >
       <section class="d-flex flex-column bg-white tw-rounded-md tw-gap-4 px-6">
         <header class="d-flex pt-4">
@@ -168,11 +169,18 @@
     methods: {
       ...mapActions(useDisciplineStore, ['addDiscipline', 'updateDiscipline', 'removeDiscipline']),
       required: required,
+      confirmAction(){
+        if(this.loading) return
+
+        this.handleDiscipline()
+      },
       deleteDiscipline(discipline){
         Swal.confirm({text: `Deseja mesmo apagar a disciplina "${discipline.name}"?`}, () =>{
           this.loading = true
           this.removeDiscipline(discipline.id).then(() => {
-            Swal.alertSuccess({title: 'Disciplina deletada com sucesso'})
+            setTimeout(() => {
+              Swal.alertSuccess({title: 'Disciplina deletada com sucesso'})
+            }, 100);
           }).finally(() => {
             this.loading = false
           })
@@ -188,13 +196,23 @@
         
         this.loading = true
         if(this.discipline.id){
-          this.updateDiscipline(this.discipline)
-          this.changeDialog(false)
-          this.loading = false
+          this.updateDiscipline(this.discipline).then(() => {
+            setTimeout(() => {
+              Swal.alertSuccess({title: 'Disciplina modificada com sucesso'})
+              this.changeDialog(false)
+            }, 100);
+          }).finally(() => {
+            this.loading = false
+          })
         }else{
-          this.addDiscipline(this.discipline)
-          this.changeDialog(false)
-          this.loading = false
+          this.addDiscipline(this.discipline).then(() => {
+            setTimeout(() => {
+              Swal.alertSuccess({title: 'Disciplina adicionada com sucesso'})
+              this.changeDialog(false)
+            }, 100);
+          }).finally(() => {
+            this.loading = false
+          })
         }
       },
       changeDialog(value, edit = false){

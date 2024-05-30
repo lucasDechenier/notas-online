@@ -1,5 +1,15 @@
 <template>
   <v-app>
+    <section class="progress-bar ">
+      <v-progress-linear
+        v-if="isLoading"
+        :model-value="progress"
+        color="blue"
+        height="4"
+        absolute
+        top
+      />
+    </section>
     <v-navigation-drawer
       permanent
       elevation="2"
@@ -34,9 +44,15 @@
 
     <v-app-bar elevation="0">
       <section class="d-flex px-6 tw-justify-between tw-bg-gray-100 tw-h-full tw-flex-grow tw-items-center tw-border-b tw-border-gray-200">
-        <span class="tw-font-semibold tw-text-md tw-text-indigo-800">
-          Disciplina: 1234
+        <span v-if="hasSelectedDiscipline" class="tw-font-semibold tw-text-md tw-text-indigo-800">
+          Disciplina: {{ selectedDiscipline.name }}
         </span>
+        <section v-else class="d-flex tw-items-center tw-text-sm tw-text-red-700 tw-border pa-2 tw-rounded-md tw-border-red-500 tw-bg-red-200 tw-font-semibold">
+          <v-icon class="mr-2">
+            fa-solid fa-circle-xmark
+          </v-icon>
+          Ainda não existe disciplina selecionada
+        </section>
 
         <v-autocomplete
           label="Escolher disciplina"
@@ -64,6 +80,7 @@
 import { useDisciplineStore } from '@/store/discipline.js'
 import { mapState, mapActions } from "pinia";
 import { required } from "@/utils/validations";
+import { useLoadingStore } from '@/store/loading';
 
 export default {
   name: "App",
@@ -74,7 +91,8 @@ export default {
     }
   },
   computed: {
-    ...mapState(useDisciplineStore, ['disciplines', 'selectedDiscipline']),
+    ...mapState(useDisciplineStore, ['disciplines', 'selectedDiscipline', 'hasSelectedDiscipline']),
+    ...mapState(useLoadingStore, ['isLoading', 'progress']),
     options() {
       return [{
           name: 'Disciplinas', 
@@ -137,3 +155,9 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.progress-bar {
+  z-index: 9999;
+}
+</style>

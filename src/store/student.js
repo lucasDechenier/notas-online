@@ -17,8 +17,10 @@ export const useStudentStore = defineStore('student', {
   },
   actions: {
     async loadStudents(){
+      if(!this.selectedDiscipline) return
+      
       this.students = []
-      return StudentsService.listStudents(this.selectedDiscipline.id).then(students => {
+      return StudentsService.listStudents(this.selectedDiscipline?.id).then(students => {
         this.students = students
       })
     },
