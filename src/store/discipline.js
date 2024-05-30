@@ -25,14 +25,25 @@ export const useDisciplineStore = defineStore('discipline', {
       this.disciplines = []
       return DisciplineService.listDisciplines().then(disciplines => {
         this.disciplines = disciplines
-        if(!this.disciplines.map(e => e.id).includes(this.selectedDiscipline?.id)) this.selectedDiscipline = null
+        if(!this.disciplines.map(e => e.id).includes(this.selectedDiscipline?.id)) {
+          this.changeSelectedDiscipline(null)
+        }
 
-        if(fillSelectedDiscipline && !this.selectedDiscipline) this.selectedDiscipline = disciplines?.[0]
+        if(fillSelectedDiscipline && !this.selectedDiscipline) {
+          this.changeSelectedDiscipline(disciplines?.[0])
+        }
       })
     },
     changeSelectedDiscipline(newDiscipline) {
-      this.selectedDiscipline = newDiscipline
-      DisciplineStorage.saveSelectedDiscipline(newDiscipline)
+      const selectedDiscipline = this.disciplines.find(discipline => discipline?.id === newDiscipline?.id)
+
+      if(selectedDiscipline) {
+        this.selectedDiscipline = selectedDiscipline
+        DisciplineStorage.saveSelectedDiscipline(selectedDiscipline)
+      } else {
+        this.selectedDiscipline = null
+        DisciplineStorage.saveSelectedDiscipline(null)
+      }
     },
     async addDiscipline(newDiscipline) {
       return DisciplineService.createDiscipline(newDiscipline).then((data) => {
@@ -41,18 +52,19 @@ export const useDisciplineStore = defineStore('discipline', {
     },
     async removeDiscipline(disciplineId, fillSelectedDiscipline = true){
       return DisciplineService.deleteDiscipline(disciplineId).then(() => {
-        if(disciplineId == this.selectedDiscipline?.id) this.selectedDiscipline = null
+        if(disciplineId == this.selectedDiscipline?.id) this.changeSelectedDiscipline(null)
         this.disciplines = this.disciplines.filter(discipline => discipline.id !== disciplineId)
 
-        if(fillSelectedDiscipline && !this.selectedDiscipline && (this.disciplines || []).length) this.selectedDiscipline = this.disciplines?.[0]
+        if(fillSelectedDiscipline && !this.selectedDiscipline && (this.disciplines || []).length) this.changeSelectedDiscipline(this.disciplines?.[0])
       })
     },
     async updateDiscipline(updatedDiscipline) {
       
       return DisciplineService.updateDiscipline(updatedDiscipline).then((data) => {
-        const disciplineIndex = this.disciplines.findIndex(discipline => discipline.id === data[0].id)
+        const disciplineIndex = this.disciplines.findIndex(discipline => discipline.id === data[0]?.id)
         if (disciplineIndex !== -1) {
           this.disciplines.splice(disciplineIndex, 1, data[0])
+          this.changeSelectedDiscipline(data[0])
         }
       })
     },

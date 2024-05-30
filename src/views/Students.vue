@@ -130,6 +130,7 @@
             :loading="loading"
             class="tw-text-red-500"
             variant="outlined"
+            id="cancelButton"
             @click="changeDialog(false)"
           >
             Cancelar
@@ -140,6 +141,7 @@
             class="tw-text-green-500"
             variant="outlined"
             @click="handleStudent"
+            id="confirmButton"
             :disabled="!hasSelectedDiscipline"
           >
             {{ edit ? 'Atualizar' : 'Cadastrar' }}
@@ -178,12 +180,13 @@
         filter: null
       }
     },
-    mounted () {
+    async mounted () {
       this.loadGradesConfiguration();
       this.loadStudents()
     },
     watch: {
       selectedDiscipline() {
+        this.loadGradesConfiguration()
         this.loadStudents()
       },
       '$route.query': {
@@ -240,8 +243,10 @@
       ...mapActions(useDisciplineStore, ['loadGradesConfiguration']),
       ...mapActions(useStudentStore, ['loadStudents', 'addStudent', 'updateStudent', 'removeStudent']),
       required: required,
-      confirmAction(){
-        if(!this.hasSelectedDiscipline || this.loading) return
+      confirmAction(event){
+        const unpermitedTargets = ['cancelButton', 'confirmButton']
+
+        if(!this.hasSelectedDiscipline || this.loading || unpermitedTargets.includes(event?.target?.id)) return
 
         this.handleStudent()
       },
@@ -302,7 +307,7 @@
             acc.totalWeight += parseFloat(gradeConfig.weight) || 0;
           }
           return acc;
-        }, { sum: 0, totalWeight: 0 });
+        }, { sum: 0, totalWeight: 0, sumWithWeight: 0 });
 
         const average = (totalWeight > 0 ? sumWithWeight / totalWeight : sum / totalGrades) || 0;
         return average;

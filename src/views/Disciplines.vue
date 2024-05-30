@@ -115,6 +115,7 @@
             :loading="loading"
             class="tw-text-red-500"
             variant="outlined"
+            id="cancelButton"
             @click="changeDialog(false)"
           >
             Cancelar
@@ -124,6 +125,7 @@
             :loading="loading"
             class="tw-text-green-500"
             variant="outlined"
+            id="confirmButton"
             @click="handleDiscipline"
           >
             {{ edit ? 'Atualizar' : 'Cadastrar' }}
@@ -169,8 +171,10 @@
     methods: {
       ...mapActions(useDisciplineStore, ['addDiscipline', 'updateDiscipline', 'removeDiscipline']),
       required: required,
-      confirmAction(){
-        if(this.loading) return
+      confirmAction(event){
+        const unpermitedTargets = ['cancelButton', 'confirmButton']
+
+        if(this.loading || unpermitedTargets.includes(event?.target?.id)) return
 
         this.handleDiscipline()
       },

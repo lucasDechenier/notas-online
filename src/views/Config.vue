@@ -120,6 +120,7 @@
             :loading="loading"
             class="tw-text-red-500"
             variant="outlined"
+            id="cancelButton"
             @click="changeDialog(false)"
           >
             Cancelar
@@ -130,6 +131,7 @@
             class="tw-text-green-500"
             variant="outlined"
             @click="handleGrade"
+            id="confirmButton"
             :disabled="!hasSelectedDiscipline"
           >
             {{ edit ? 'Atualizar' : 'Cadastrar' }}
@@ -188,8 +190,10 @@
     methods: {
       ...mapActions(useDisciplineStore, ['addGradeConfiguration', 'updateGradeConfiguration', 'loadGradesConfiguration', 'removeGradeConfiguration']),
       required: required,
-      confirmAction(){
-        if(!this.hasSelectedDiscipline || this.loading) return
+      confirmAction(event){
+        const unpermitedTargets = ['cancelButton', 'confirmButton']
+
+        if(!this.hasSelectedDiscipline || this.loading || unpermitedTargets.includes(event?.target?.id)) return
 
         this.handleGrade()
       },
